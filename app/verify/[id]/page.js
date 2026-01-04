@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
 
 export default function VerifyCertificate() {
     const params = useParams()
@@ -13,19 +12,14 @@ export default function VerifyCertificate() {
     useEffect(() => {
         async function fetchCertificate() {
             try {
-                const { data, error } = await supabase
-                    .from('certificates')
-                    .select('*')
-                    .eq('id', params.id)
-                    .single()
+                const response = await fetch(`/api/verify/${params.id}`)
+                const data = await response.json()
 
-                if (error) throw error
-
-                if (data) {
-                    setCertificate(data)
-                } else {
-                    setError('Certificate not found')
+                if (!response.ok) {
+                    throw new Error(data.error || 'Certificate not found')
                 }
+
+                setCertificate(data)
             } catch (err) {
                 setError(err.message || 'Failed to verify certificate')
             } finally {
